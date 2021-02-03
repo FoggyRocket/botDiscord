@@ -50,7 +50,7 @@ async def play(ctx, value=""):
     if value not in RPS:
        return   await ctx.send(f"{value} is not valid, try one of these ['ROCK','PAPER','SCISSORS']!")
          
-    # await ctx.send(f"I choose {cp_action}!")
+    await ctx.send(f"Let's play, I choose: {cp_action}!")
     if value == cp_action:
         await ctx.send(f"Both players selected {value}. It's a tie!")
     elif value == "ROCK":
