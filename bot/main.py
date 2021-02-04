@@ -3,21 +3,22 @@ import discord
 
 from discord.ext import commands
 from dotenv import load_dotenv
-import urllib.request
 import json
+import requests
 import random
 import re
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
 bot = commands.Bot(command_prefix='!') #Prefix to invoke bot
+api_url_base = 'https://rickandmortyapi.com/api/character/?name='
+
 
 
 @bot.event
 async def on_message(message):
     # if message.author == bot.user:
     #     return
-
 
     if re.sub(r'[^\w]', '', message.content.lower()) == 'hellothere':
         response = f'{message.author.name}, Welcome back!'
@@ -78,17 +79,18 @@ async def search(ctx,name=""):
     
     if name is None or name == "":
         return   await ctx.send("I can't search if you don't put some value")
+
+    req = requests.get(api_url_base +name)
     
-    data = urllib.request.urlopen("https://rickandmortyapi.com/api/character/?name" + name ).read()
-    response = ""
 
 
-    name = json.loads(data)["results"][0]["name"]
-    status = json.loads(data)["results"][0]["status"]
-    gender = json.loads(data)["results"][0]["gender"]
-    location = json.loads(data)["results"][0]["location"]["name"]
-    response = ">> " + name + " status: " + status +", gender: "+ gender + ", location: " + location
-    await ctx.send(response)
+    if req.status_code == 200:
+        response=""
+        for item in req.json()["results"]:
+            response = response + " " + f'Name:{item["name"]}, Status:{item["status"]}, Location:{item["location"]["name"]}\n'
+        await ctx.channel.send(response)
+    if req.status_code == 404:
+        return   await ctx.send(req.json()["error"])
 
 @bot.command(
 	help="Looks like you need some help.",
